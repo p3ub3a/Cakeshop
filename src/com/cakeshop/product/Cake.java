@@ -52,6 +52,10 @@ public enum Cake {
         return SIMPLE_CAKE;
     }
 
+    public String getName() {
+        return name;
+    }
+
     @Override
     public String toString() {
         return "Cake{" +

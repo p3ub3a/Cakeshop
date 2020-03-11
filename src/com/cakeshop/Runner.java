@@ -6,16 +6,19 @@ import com.cakeshop.product.OrderStatus;
 import com.cakeshop.utils.Constants;
 import com.cakeshop.workers.*;
 
+import java.util.Map;
 import java.util.Queue;
 import java.util.Scanner;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 public class Runner {
+    public static final Object lock = new Object();
 
-    public static void main(String[] args) throws InterruptedException{
+    public static void main(String[] args) throws InterruptedException, ExecutionException{
+
+        Map<Order, Cake> orderCakeMap = new ConcurrentHashMap<>();
+
+        Queue<Order> orders = new ConcurrentLinkedQueue<Order>();
 
         // Managers
         ExecutorService managerService = Executors.newFixedThreadPool(Constants.MANAGER_THREAD_NUMBER);
@@ -28,62 +31,78 @@ public class Runner {
         Confectioner creamConfectioner = new CreamConfectioner();
         Confectioner decorationsConfectioner = new DecorationsConfectioner();
 
-        Queue<Order> orders = new ConcurrentLinkedQueue<Order>();
+        run(orderCakeMap, orders, managerService, confectionerService, courierService);
+    }
 
-        boolean shouldRun = true;
-        int orderCount = 0;
-        System.out.println("Please enter a number associated to the desired cake \n" +
-                "You may press 'X' to quit.\n");
+    private static void run(Map<Order, Cake> orderCakeMap, Queue<Order> orders, ExecutorService managerService, ExecutorService confectionerService, ExecutorService courierService) throws InterruptedException {
 
-        while (shouldRun) {
-            String input;
-            Scanner inputScanner = new Scanner(System.in);
-            System.out.println("What cake would you like to order ? \n 1. "+ Cake.YELLOW_BUTTER_CAKE + " \n 2. " + Cake.POUND_CAKE +
-                    "\n 3. " + Cake.RED_VELVET_CAKE + " \n 4. " + Cake.CARROT_CAKE + "\n 5. " + Cake.SPONGE_CAKE + "\n 6. " + Cake.GENOISE_CAKE +
-                    " \n 7. " + Cake.CHIFON_CAKE + "\n 8. " + Cake.FLOURLESS_CAKE + "\n 9. " + Cake.UPSIDE_DOWN_CAKE + " \n 10. " + Cake.HUMMING_BIRD_CAKE +
-                    " \n 11. " + Cake.FRUIT_CAKE + " \n 12. " + Cake.SIMPLE_CAKE);
-            input = inputScanner.nextLine();
-            if(input.equals("X")){
-                shouldRun=false;
-                break;
-            }
 
-            if (input.matches("[1-9]|1[0-2]")) {
-                Cake currentCake = Cake.getCakeById(Integer.parseInt(input));
-                Order order = new Order();
-                order.setId(orderCount);
-                order.setStatus(OrderStatus.WAITING_MANAGER);
+        synchronized (lock){
+            boolean shouldRun = true;
+            int orderCount = 0;
+            System.out.println("Please enter a number associated to the desired cake \n" +
+                    "You may press 'X' to quit.\n");
 
-                if(orders.size() < 4){
-                    orders.add(order);
-                }else{
-                    Thread.currentThread().wait();
+            while (shouldRun) {
+                String input;
+                Scanner inputScanner = new Scanner(System.in);
+                System.out.println("What cake would you like to order ? \n 1. "+ Cake.YELLOW_BUTTER_CAKE.getName() + " \n 2. " + Cake.POUND_CAKE.getName() +
+                        "\n 3. " + Cake.RED_VELVET_CAKE.getName() + " \n 4. " + Cake.CARROT_CAKE.getName() + "\n 5. " + Cake.SPONGE_CAKE.getName() +
+                        "\n 6. " + Cake.GENOISE_CAKE.getName() + " \n 7. " + Cake.CHIFON_CAKE.getName() + "\n 8. " + Cake.FLOURLESS_CAKE.getName() +
+                        "\n 9. " + Cake.UPSIDE_DOWN_CAKE.getName() + " \n 10. " + Cake.HUMMING_BIRD_CAKE.getName() +
+                        " \n 11. " + Cake.FRUIT_CAKE.getName() + " \n 12. " + Cake.SIMPLE_CAKE.getName());
+                input = inputScanner.nextLine();
+                if(input.equals("X")){
+                    shouldRun=false;
+                    break;
                 }
 
+                if (input.matches("[1-9]|1[0-2]")) {
+                    orderCount++;
+                    Cake cake = Cake.getCakeById(Integer.parseInt(input));
+                    Order order = new Order();
+                    order.setId(orderCount);
+                    order.setStatus(OrderStatus.WAITING_MANAGER);
 
-                System.out.println("\n Please stand by as we assign the order to a manager ... \n");
-                Thread.currentThread().sleep(Constants.STAND_BY_TIME);
+                    orders.add(order);
+                    orderCakeMap.put(order, cake);
 
-                Future<Order> managerOrderFuture = managerService.submit(() -> {
-                    System.out.println("on thread: " + Thread.currentThread().getName());
-                    System.out.println(currentCake.toString());
+                    if(orders.size() <= 4){
+                        managerService.submit(() -> {
 
-                    Manager manager = new Manager();
-                    manager.sendOrder(confectionerService);
+                            System.out.println("on thread: " + Thread.currentThread().getName());
+                            System.out.println(cake.toString());
 
-                    try {
-                        Thread.sleep(20000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                            Manager manager = new Manager();
+                            try {
+                                manager.sendOrder(confectionerService, order, cake);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+
+                            orders.remove(order);
+                            System.out.println("----------- size: " + orders.size());
+                            synchronized (lock){
+                                // lock.notify();
+                            }
+                        });
+
+                    }else{
+                        System.out.println("\n Please stand by as we assign your order to a manager ... \n");
+                        System.out.println(Thread.currentThread().getName());
+                        //lock.wait();
                     }
-                    return order;
-                });
-            } else {
-                System.out.println("\nPlease enter a numeric value in the range 1-12\n");
-                continue;
+                } else {
+                    System.out.println("\nPlease enter a numeric value in the range 1-12\n");
+                    continue;
+                }
             }
 
-            orderCount++;
+            System.out.println("Shutting down executors...");
+            managerService.shutdown();
+            confectionerService.shutdown();
+            courierService.shutdown();
         }
+
     }
 }
