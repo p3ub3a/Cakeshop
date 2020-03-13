@@ -17,7 +17,6 @@ public class Runner {
     public static void main(String[] args) throws InterruptedException, ExecutionException{
 
         Map<Order, Cake> orderCakeMap = new ConcurrentHashMap<>();
-
         Queue<Order> orders = new ConcurrentLinkedQueue<Order>();
 
         // Managers
@@ -27,23 +26,18 @@ public class Runner {
         // Couriers
         ExecutorService courierService = Executors.newFixedThreadPool(Constants.COURIER_THREAD_NUMBER);
 
-        Confectioner doughConfectioner = new DoughConfectioner();
-        Confectioner creamConfectioner = new CreamConfectioner();
-        Confectioner decorationsConfectioner = new DecorationsConfectioner();
-
         run(orderCakeMap, orders, managerService, confectionerService, courierService);
     }
 
     private static void run(Map<Order, Cake> orderCakeMap, Queue<Order> orders, ExecutorService managerService, ExecutorService confectionerService, ExecutorService courierService) throws InterruptedException {
 
+        boolean shouldRun = true;
+        int orderCount = 0;
+        System.out.println("Please enter a number associated to the desired cake \n" +
+                "You may press 'X' to quit.\n");
 
-        synchronized (lock){
-            boolean shouldRun = true;
-            int orderCount = 0;
-            System.out.println("Please enter a number associated to the desired cake \n" +
-                    "You may press 'X' to quit.\n");
-
-            while (shouldRun) {
+        while (shouldRun) {
+            if(orders.size() < 4){
                 String input;
                 Scanner inputScanner = new Scanner(System.in);
                 System.out.println("What cake would you like to order ? \n 1. "+ Cake.YELLOW_BUTTER_CAKE.getName() + " \n 2. " + Cake.POUND_CAKE.getName() +
@@ -67,42 +61,35 @@ public class Runner {
                     orders.add(order);
                     orderCakeMap.put(order, cake);
 
-                    if(orders.size() <= 4){
-                        managerService.submit(() -> {
+                    managerService.submit(() -> {
 
-                            System.out.println("on thread: " + Thread.currentThread().getName());
-                            System.out.println(cake.toString());
+                        System.out.println("on thread: " + Thread.currentThread().getName());
+                        System.out.println(cake.toString());
 
-                            Manager manager = new Manager();
-                            try {
-                                manager.sendOrder(confectionerService, order, cake);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
+                        Manager manager = new Manager();
+                        try {
 
-                            orders.remove(order);
-                            System.out.println("----------- size: " + orders.size());
-                            synchronized (lock){
-                                // lock.notify();
-                            }
-                        });
+                            manager.deliverCake(manager.sendOrderToConfectioners(confectionerService, order, cake), cake);
+                        } catch (InterruptedException | ExecutionException e) {
+                            e.printStackTrace();
+                        }
 
-                    }else{
-                        System.out.println("\n Please stand by as we assign your order to a manager ... \n");
-                        System.out.println(Thread.currentThread().getName());
-                        //lock.wait();
-                    }
+                        orders.remove(order);
+                        System.out.println("----------- size: " + orders.size());
+                    });
                 } else {
                     System.out.println("\nPlease enter a numeric value in the range 1-12\n");
                     continue;
                 }
+            }else{
+                System.out.println("\n Please stand by as we assign your order to a manager ... \n");
+                System.out.println(Thread.currentThread().getName());
+                Thread.sleep(Constants.STAND_BY_TIME);
             }
-
-            System.out.println("Shutting down executors...");
-            managerService.shutdown();
-            confectionerService.shutdown();
-            courierService.shutdown();
         }
-
+        System.out.println("Shutting down executors...");
+        managerService.shutdown();
+        confectionerService.shutdown();
+        courierService.shutdown();
     }
 }
