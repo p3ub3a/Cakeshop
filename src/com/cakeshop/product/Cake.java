@@ -12,7 +12,7 @@ public enum Cake {
     UPSIDE_DOWN_CAKE("upside down cake",9,5000, 3000, 4000, 6000),
     HUMMING_BIRD_CAKE("hummingbird cake",10,3000, 5000, 4500, 6000),
     FRUIT_CAKE("fruit cake",11, 1000,3000, 6000, 6000),
-    SIMPLE_CAKE("simple cake",12, 1000,1000, 1000, 6000);
+    SIMPLE_CAKE("simple cake",12, 10000,10000, 10000, 10000);
 
     private String name;
     private int id;
@@ -23,6 +23,7 @@ public enum Cake {
 
     private Cake(String name, int id, int doughDuration, int creamDuration, int decorationsDuration, int deliveryDuration){
         this.name = name;
+        this.id = id;
         this.doughDuration = doughDuration;
         this.creamDuration = creamDuration;
         this.decorationsDuration = decorationsDuration;
@@ -46,6 +47,7 @@ public enum Cake {
     }
 
     public static Cake getCakeById(int id){
+        System.out.println("---------------id: "+ id);
         for (Cake cake : values()){
             if(cake.id == id) return cake;
         }

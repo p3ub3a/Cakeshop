@@ -19,14 +19,13 @@ public class Manager {
         this.id = id;
     }
 
-    public Order sendOrderToConfectioners(ExecutorService confectionerService, Order order, Cake cake) throws InterruptedException, ExecutionException{
+    public Future<Order> sendOrderToConfectioners(ExecutorService confectionerService, Order order, Cake cake) throws InterruptedException, ExecutionException{
         order.setStatus(OrderStatus.WAITING_BAKING);
-
         prepareDough(confectionerService, order, cake);
         prepareCream(confectionerService, order, cake);
         Future<Order> futureOrder = prepareDecorations(confectionerService, order, cake);
 
-        return futureOrder.get();
+        return futureOrder;
     }
 
     private void prepareDough(ExecutorService confectionerService, Order order, Cake cake) {

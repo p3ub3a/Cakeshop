@@ -16,7 +16,6 @@ public class Runner {
 
     public static void main(String[] args) throws InterruptedException, ExecutionException{
 
-        Map<Order, Cake> orderCakeMap = new ConcurrentHashMap<>();
         Queue<Order> orders = new ConcurrentLinkedQueue<Order>();
 
         // Managers
@@ -26,10 +25,10 @@ public class Runner {
         // Couriers
         ExecutorService courierService = Executors.newFixedThreadPool(Constants.COURIER_THREAD_NUMBER);
 
-        run(orderCakeMap, orders, managerService, confectionerService, courierService);
+        run(orders, managerService, confectionerService, courierService);
     }
 
-    private static void run(Map<Order, Cake> orderCakeMap, Queue<Order> orders, ExecutorService managerService, ExecutorService confectionerService, ExecutorService courierService) throws InterruptedException {
+    private static void run(Queue<Order> orders, ExecutorService managerService, ExecutorService confectionerService, ExecutorService courierService) throws InterruptedException {
 
         boolean shouldRun = true;
         int orderCount = 0;
@@ -59,7 +58,6 @@ public class Runner {
                     order.setStatus(OrderStatus.WAITING_MANAGER);
 
                     orders.add(order);
-                    orderCakeMap.put(order, cake);
 
                     managerService.submit(() -> {
 
@@ -68,14 +66,16 @@ public class Runner {
 
                         Manager manager = new Manager();
                         try {
-
-                            manager.deliverCake(manager.sendOrderToConfectioners(confectionerService, order, cake), cake);
+                            Future<Order> futureOrder = manager.sendOrderToConfectioners(confectionerService, order, cake);
+                            while(!futureOrder.isDone()){
+                                Thread.currentThread().sleep(Constants.STAND_BY_TIME);
+                            }
+                            manager.deliverCake(futureOrder.get(), cake);
                         } catch (InterruptedException | ExecutionException e) {
                             e.printStackTrace();
                         }
 
                         orders.remove(order);
-                        System.out.println("----------- size: " + orders.size());
                     });
                 } else {
                     System.out.println("\nPlease enter a numeric value in the range 1-12\n");
