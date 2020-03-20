@@ -62,11 +62,17 @@ public class Manager {
         });
     }
 
-    public void deliverCake(Order order, Cake cake) throws InterruptedException {
-        order.setStatus(OrderStatus.WAITING_DELIVERY);
-        System.out.println("Delivering order " + order.getId());
-        Thread.sleep(cake.getDeliveryDuration());
-        System.out.println("Delivered order " + order.getId());
+    public void deliverCake(Order order, Cake cake, ExecutorService courierService) throws InterruptedException {
+        courierService.submit(() -> {
+            try{
+                order.setStatus(OrderStatus.WAITING_DELIVERY);
+                System.out.println("Delivering order " + order.getId());
+                Thread.currentThread().sleep(cake.getDeliveryDuration());
+                System.out.println("Delivered order " + order.getId());
+            }catch(InterruptedException e){
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override

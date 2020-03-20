@@ -70,7 +70,7 @@ public class Runner {
                             while(!futureOrder.isDone()){
                                 Thread.currentThread().sleep(Constants.STAND_BY_TIME);
                             }
-                            manager.deliverCake(futureOrder.get(), cake);
+                            manager.deliverCake(futureOrder.get(), cake, courierService);
                         } catch (InterruptedException | ExecutionException e) {
                             e.printStackTrace();
                         }
