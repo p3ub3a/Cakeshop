@@ -6,7 +6,6 @@ import com.cakeshop.product.OrderStatus;
 import com.cakeshop.utils.Constants;
 import com.cakeshop.workers.*;
 
-import java.util.Map;
 import java.util.Queue;
 import java.util.Scanner;
 import java.util.concurrent.*;
@@ -36,7 +35,7 @@ public class Runner {
                 "You may press 'X' to quit.\n");
 
         while (shouldRun) {
-            if(orders.size() < 4){
+            if(orders.size() < Constants.MANAGER_THREAD_NUMBER){
                 String input;
                 Scanner inputScanner = new Scanner(System.in);
                 System.out.println("What cake would you like to order ? \n 1. "+ Cake.YELLOW_BUTTER_CAKE.getName() + " \n 2. " + Cake.POUND_CAKE.getName() +
