@@ -54,8 +54,8 @@ public class Runner {
                 }
             }else{
                 System.out.println("\n Please stand by as we assign your order to a manager ... \n");
-                System.out.println(Thread.currentThread().getName());
                 Thread.sleep(Constants.STAND_BY_TIME);
+
             }
         }
 
