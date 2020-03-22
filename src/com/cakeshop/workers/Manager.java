@@ -32,7 +32,7 @@ public class Manager {
         confectionerService.submit(() -> {
             Confectioner confectioner = new DoughConfectioner();
             try {
-                confectioner.prepareCake(cake.getDoughDuration(), order.getId());
+                confectioner.prepareCake(cake.getDoughDuration(), order.getId(), cake.getName());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -43,7 +43,7 @@ public class Manager {
         confectionerService.submit(() -> {
             Confectioner confectioner = new CreamConfectioner();
             try {
-                confectioner.prepareCake(cake.getCreamDuration(), order.getId());
+                confectioner.prepareCake(cake.getCreamDuration(), order.getId(), cake.getName());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -54,7 +54,7 @@ public class Manager {
         return confectionerService.submit(() -> {
             Confectioner confectioner = new DecorationsConfectioner();
             try {
-                confectioner.prepareCake(cake.getDecorationsDuration(), order.getId());
+                confectioner.prepareCake(cake.getDecorationsDuration(), order.getId(), cake.getName());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -66,9 +66,9 @@ public class Manager {
         courierService.submit(() -> {
             try{
                 order.setStatus(OrderStatus.WAITING_DELIVERY);
-                System.out.println("Delivering order " + order.getId());
+                System.out.println("Delivering order " + order.getId() + "; cake: " + cake.getName());
                 Thread.currentThread().sleep(cake.getDeliveryDuration());
-                System.out.println("Delivered order " + order.getId());
+                System.out.println("Delivered order " + order.getId() + "; cake: " + cake.getName());
             }catch(InterruptedException e){
                 e.printStackTrace();
             }

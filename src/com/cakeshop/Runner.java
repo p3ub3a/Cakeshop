@@ -4,6 +4,7 @@ import com.cakeshop.product.Cake;
 import com.cakeshop.product.Order;
 import com.cakeshop.product.OrderStatus;
 import com.cakeshop.utils.Constants;
+import com.cakeshop.utils.Messages;
 import com.cakeshop.workers.*;
 
 import java.util.Queue;
@@ -31,8 +32,7 @@ public class Runner {
 
     private static void simulateShop(Queue<Order> orders, ExecutorService managerService, ExecutorService confectionerService, ExecutorService courierService) throws InterruptedException {
 
-        System.out.println("Please enter a number associated to the desired cake \n" +
-                "You may press 'X' to quit.\n");
+        System.out.println(Messages.INTRO_MESSAGE);
 
         while (shouldRun) {
             if(orders.size() < Constants.MANAGER_THREAD_NUMBER){
@@ -49,17 +49,17 @@ public class Runner {
                         processOrder(orders, confectionerService, courierService, cake, order);
                     });
                 } else {
-                    System.out.println("\nPlease enter a numeric value in the range 1-12\n");
+                    System.out.println(Messages.IN_THE_RANGE_1_12_MESSAGE);
                     continue;
                 }
             }else{
-                System.out.println("\n Please stand by as we assign your order to a manager ... \n");
+                System.out.println(Messages.ORDER_TO_A_MANAGER_MESSAGE);
                 Thread.sleep(Constants.STAND_BY_TIME);
 
             }
         }
 
-        System.out.println("Shutting down executors...");
+        System.out.println(Messages.SHUTTING_DOWN_EXECUTORS_MESSAGE);
         managerService.shutdown();
         confectionerService.shutdown();
         courierService.shutdown();
@@ -68,17 +68,31 @@ public class Runner {
     private static String getInput() {
         String input;
         Scanner inputScanner = new Scanner(System.in);
-        System.out.println("What cake would you like to order ? \n 1. "+ Cake.YELLOW_BUTTER_CAKE.getName() + " \n 2. " + Cake.POUND_CAKE.getName() +
-                "\n 3. " + Cake.RED_VELVET_CAKE.getName() + " \n 4. " + Cake.CARROT_CAKE.getName() + "\n 5. " + Cake.SPONGE_CAKE.getName() +
-                "\n 6. " + Cake.GENOISE_CAKE.getName() + " \n 7. " + Cake.CHIFON_CAKE.getName() + "\n 8. " + Cake.FLOURLESS_CAKE.getName() +
-                "\n 9. " + Cake.UPSIDE_DOWN_CAKE.getName() + " \n 10. " + Cake.HUMMING_BIRD_CAKE.getName() +
-                " \n 11. " + Cake.FRUIT_CAKE.getName() + " \n 12. " + Cake.SIMPLE_CAKE.getName());
+        displayMessage();
         input = inputScanner.nextLine();
         if(input.equals("X")){
             shouldRun=false;
             return null;
         }
         return input;
+    }
+
+    private static void displayMessage() {
+        StringBuilder messageBuilder = new StringBuilder();
+        messageBuilder.append(Messages.CAKE_ORDER_MESSAGE)
+                .append(" \n 1. ").append(Cake.YELLOW_BUTTER_CAKE.getName())
+                .append(" \n 2. ").append(Cake.POUND_CAKE.getName())
+                .append(" \n 3. ").append(Cake.RED_VELVET_CAKE.getName())
+                .append(" \n 4. ").append(Cake.CARROT_CAKE.getName())
+                .append(" \n 5. ").append(Cake.SPONGE_CAKE.getName())
+                .append(" \n 6. ").append(Cake.GENOISE_CAKE.getName())
+                .append(" \n 7. ").append(Cake.CHIFON_CAKE.getName())
+                .append(" \n 8. ").append(Cake.FLOURLESS_CAKE.getName())
+                .append(" \n 9. ").append(Cake.UPSIDE_DOWN_CAKE.getName())
+                .append(" \n 10. ").append(Cake.HUMMING_BIRD_CAKE.getName())
+                .append(" \n 11. ").append(Cake.FRUIT_CAKE.getName())
+                .append(" \n 12. ").append(Cake.SIMPLE_CAKE.getName());
+        System.out.println(messageBuilder);
     }
 
     private static Order createOrder(Queue<Order> orders) {
@@ -92,7 +106,7 @@ public class Runner {
     }
 
     private static void processOrder(Queue<Order> orders, ExecutorService confectionerService, ExecutorService courierService, Cake cake, Order order) {
-        System.out.println("A manager got this cake: " + cake.toString());
+        System.out.println("A manager got the following cake: " + cake.toString());
 
         Manager manager = new Manager();
         try {
