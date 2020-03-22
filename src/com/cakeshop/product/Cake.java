@@ -47,7 +47,6 @@ public enum Cake {
     }
 
     public static Cake getCakeById(int id){
-        System.out.println("---------------id: "+ id);
         for (Cake cake : values()){
             if(cake.id == id) return cake;
         }
