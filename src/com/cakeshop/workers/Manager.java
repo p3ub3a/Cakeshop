@@ -62,19 +62,6 @@ public class Manager {
         });
     }
 
-    public void deliverCake(Order order, Cake cake, ExecutorService courierService) throws InterruptedException {
-        courierService.submit(() -> {
-            try{
-                order.setStatus(OrderStatus.WAITING_DELIVERY);
-                System.out.println("Delivering order " + order.getId() + "; cake: " + cake.getName());
-                Thread.currentThread().sleep(cake.getDeliveryDuration());
-                System.out.println("Delivered order " + order.getId() + "; cake: " + cake.getName());
-            }catch(InterruptedException e){
-                e.printStackTrace();
-            }
-        });
-    }
-
     @Override
     public String toString() {
         return "Manager{" +

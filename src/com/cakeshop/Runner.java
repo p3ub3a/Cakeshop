@@ -35,7 +35,7 @@ public class Runner {
         System.out.println(Messages.INTRO_MESSAGE);
 
         while (shouldRun) {
-            if(orders.size() < Constants.MANAGER_THREAD_NUMBER){
+            if(orders.size() <= Constants.MANAGER_THREAD_NUMBER){
                 String input = getInput();
 
                 if (input == null) break;
@@ -109,12 +109,13 @@ public class Runner {
         System.out.println("A manager got the following cake: " + cake.toString());
 
         Manager manager = new Manager();
+        Courier courier = new Courier();
         try {
             Future<Order> futureOrder = manager.sendOrderToConfectioners(confectionerService, order, cake);
             while(!futureOrder.isDone()){
                 Thread.currentThread().sleep(Constants.STAND_BY_TIME);
             }
-            manager.deliverCake(futureOrder.get(), cake, courierService);
+            courier.deliverCake(futureOrder.get(), cake, courierService);
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
