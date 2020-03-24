@@ -1,6 +1,7 @@
 ## Runner.java
 
-* **shouldRun** - variabila de tip boolean ce tine programul in viata (valoare default **true**), tasteaza 'X' in consola pentru a o seta cu **false**.
+* **shouldRun** - variabila de tip boolean ce tine programul in viata (valoare default **true**), tasteaza 'X' in consola pentru a o seta cu **false**;
+* **orderCount** - variabila ce este incrementata atunci cand o comanda este preluata.
 
 #### Metoda main contine:
  * o coada de comenzi ce poate fi folosita de mai multe fire de executie, din moment ce este de tip ConcurrentLinkedQueue;
@@ -11,7 +12,7 @@
  * thread-ul principal reprezinta responsabilul telefonic;
  * utilizatorul poate tasta un numar cuprins intre 1 si 12 pentru a-si alege tortul dorit (gasit in **product/Cake.java**);
  * daca in coada exista mai mult de 6 comenzi, responsabilul telefonic (thread-ul principal) asteapta ca un manager sa fie liber;
- * fiecare manager/thread generat de **managerService** apeleaza metoda **processOrder**
+ * fiecare manager/thread generat de *managerService* apeleaza metoda *processOrder*
  * in final, daca **shouldRun** este **false**, cele 3 ExecutorServices vor fi inchise prin apelarea metodei *shutdown*
  
  #### processOrder(Queue<Order> orders, ExecutorService confectionerService, ExecutorService courierService, Cake cake, Order order)
