@@ -25,6 +25,7 @@ public class Courier {
                 Thread.currentThread().sleep(cake.getDeliveryDuration());
                 System.out.println("Delivered order " + order.getId() + "; cake: " + cake.getName());
             }catch(InterruptedException e){
+                order.setStatus(OrderStatus.FAILED);
                 e.printStackTrace();
             }
         });

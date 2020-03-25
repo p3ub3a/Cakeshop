@@ -48,6 +48,8 @@ public class Runner {
                     managerService.submit(() -> {
                         processOrder(orders, confectionerService, courierService, cake, order);
                     });
+
+                    order.setStatus(OrderStatus.DONE);
                 } else {
                     System.out.println(Messages.IN_THE_RANGE_1_12_MESSAGE);
                     continue;

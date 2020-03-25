@@ -21,41 +21,44 @@ public class Manager {
 
     public Future<Order> sendOrderToConfectioners(ExecutorService confectionerService, Order order, Cake cake) throws InterruptedException, ExecutionException{
         order.setStatus(OrderStatus.WAITING_BAKING);
-        prepareDough(confectionerService, order, cake);
-        prepareCream(confectionerService, order, cake);
-        Future<Order> futureOrder = prepareDecorations(confectionerService, order, cake);
+        sendOrderToDoughConfectioner(confectionerService, order, cake);
+        sendOrderToCreamConfectioner(confectionerService, order, cake);
+        Future<Order> futureOrder = sendOrderToDecorationsConfectioner(confectionerService, order, cake);
 
         return futureOrder;
     }
 
-    private void prepareDough(ExecutorService confectionerService, Order order, Cake cake) {
+    private void sendOrderToDoughConfectioner(ExecutorService confectionerService, Order order, Cake cake) {
         confectionerService.submit(() -> {
             Confectioner confectioner = new DoughConfectioner();
             try {
                 confectioner.prepareCake(cake.getDoughDuration(), order.getId(), cake.getName());
             } catch (InterruptedException e) {
+                order.setStatus(OrderStatus.FAILED);
                 e.printStackTrace();
             }
         });
     }
 
-    private void prepareCream(ExecutorService confectionerService, Order order, Cake cake) {
+    private void sendOrderToCreamConfectioner(ExecutorService confectionerService, Order order, Cake cake) {
         confectionerService.submit(() -> {
             Confectioner confectioner = new CreamConfectioner();
             try {
                 confectioner.prepareCake(cake.getCreamDuration(), order.getId(), cake.getName());
             } catch (InterruptedException e) {
+                order.setStatus(OrderStatus.FAILED);
                 e.printStackTrace();
             }
         });
     }
 
-    private Future<Order> prepareDecorations(ExecutorService confectionerService, Order order, Cake cake) {
+    private Future<Order> sendOrderToDecorationsConfectioner(ExecutorService confectionerService, Order order, Cake cake) {
         return confectionerService.submit(() -> {
             Confectioner confectioner = new DecorationsConfectioner();
             try {
                 confectioner.prepareCake(cake.getDecorationsDuration(), order.getId(), cake.getName());
             } catch (InterruptedException e) {
+                order.setStatus(OrderStatus.FAILED);
                 e.printStackTrace();
             }
             return order;
