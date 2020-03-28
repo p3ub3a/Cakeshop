@@ -1,7 +1,7 @@
 package com.cakeshop.product;
 
 public enum Cake {
-    YELLOW_BUTTER_CAKE("yellow butter cake",1, 5000, 2000, 4000, 4000),
+    YELLOW_BUTTER_CAKE("yellow butter cake",1, 5000, 2000, 5000, 6000),
     POUND_CAKE("pound cake", 2, 3000,3000, 3000, 7000),
     RED_VELVET_CAKE("red velvet cake", 3,2000, 5000, 6000, 4000),
     CARROT_CAKE("carrot cake", 4, 3000,3000, 5000, 5000),
@@ -12,7 +12,7 @@ public enum Cake {
     UPSIDE_DOWN_CAKE("upside down cake",9,5000, 3000, 4000, 3000),
     HUMMING_BIRD_CAKE("hummingbird cake",10,3000, 5000, 4500, 3000),
     FRUIT_CAKE("fruit cake",11, 1000,3000, 6000, 4000),
-    SIMPLE_CAKE("simple cake",12, 1000,1000, 1000, 3000);
+    SIMPLE_CAKE("simple cake",12, 5000,5000, 5000, 20000);
 
     private String name;
     private int id;

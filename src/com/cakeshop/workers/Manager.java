@@ -4,32 +4,28 @@ import com.cakeshop.product.Cake;
 import com.cakeshop.product.Order;
 import com.cakeshop.product.OrderStatus;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 public class Manager {
-    private int id;
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public Future<Order> sendOrderToConfectioners(ExecutorService confectionerService, Order order, Cake cake) throws InterruptedException, ExecutionException{
+    public List<Future<Order>> sendOrderToConfectioners(ExecutorService confectionerService, Order order, Cake cake) throws InterruptedException, ExecutionException{
+        List<Future<Order>> futures = new ArrayList<>();
         order.setStatus(OrderStatus.WAITING_BAKING);
-        sendOrderToDoughConfectioner(confectionerService, order, cake);
-        sendOrderToCreamConfectioner(confectionerService, order, cake);
-        Future<Order> futureOrder = sendOrderToDecorationsConfectioner(confectionerService, order, cake);
-
-        return futureOrder;
+        Future<Order> futureDough = sendOrderToDoughConfectioner(confectionerService, order, cake);
+        futures.add(futureDough);
+        Future<Order> futureCream = sendOrderToCreamConfectioner(confectionerService, order, cake);
+        futures.add(futureCream);
+        Future<Order> futureDecos = sendOrderToDecorationsConfectioner(confectionerService, order, cake);
+        futures.add(futureDecos);
+        
+        return futures;
     }
 
-    private void sendOrderToDoughConfectioner(ExecutorService confectionerService, Order order, Cake cake) {
-        confectionerService.submit(() -> {
+    private Future<Order> sendOrderToDoughConfectioner(ExecutorService confectionerService, Order order, Cake cake) {
+        return confectionerService.submit(() -> {
             Confectioner confectioner = new DoughConfectioner();
             try {
                 confectioner.prepareCake(cake.getDoughDuration(), order.getId(), cake.getName());
@@ -37,11 +33,12 @@ public class Manager {
                 order.setStatus(OrderStatus.FAILED);
                 e.printStackTrace();
             }
+            return order;
         });
     }
 
-    private void sendOrderToCreamConfectioner(ExecutorService confectionerService, Order order, Cake cake) {
-        confectionerService.submit(() -> {
+    private Future<Order> sendOrderToCreamConfectioner(ExecutorService confectionerService, Order order, Cake cake) {
+        return confectionerService.submit(() -> {
             Confectioner confectioner = new CreamConfectioner();
             try {
                 confectioner.prepareCake(cake.getCreamDuration(), order.getId(), cake.getName());
@@ -49,6 +46,7 @@ public class Manager {
                 order.setStatus(OrderStatus.FAILED);
                 e.printStackTrace();
             }
+            return order;
         });
     }
 
@@ -63,12 +61,5 @@ public class Manager {
             }
             return order;
         });
-    }
-
-    @Override
-    public String toString() {
-        return "Manager{" +
-                "id=" + id +
-                '}';
     }
 }

@@ -7,6 +7,7 @@ import com.cakeshop.utils.Constants;
 import com.cakeshop.utils.Messages;
 import com.cakeshop.workers.*;
 
+import java.util.List;
 import java.util.Queue;
 import java.util.Scanner;
 import java.util.concurrent.*;
@@ -16,10 +17,15 @@ public class Runner {
 
     private static volatile int orderCount = 0;
 
+    public static Object[] monitors = new Object[Constants.COURIER_THREAD_NUMBER];
+
+    private static volatile int monitorCounter = 0;
+
     public static void main(String[] args) throws InterruptedException, ExecutionException{
 
         Queue<Order> orders = new ConcurrentLinkedQueue<>();
 
+        initializeMonitors();
         // Managers
         ExecutorService managerService = Executors.newFixedThreadPool(Constants.MANAGER_THREAD_NUMBER);
         // Confectioners
@@ -28,6 +34,12 @@ public class Runner {
         ExecutorService courierService = Executors.newFixedThreadPool(Constants.COURIER_THREAD_NUMBER);
 
         simulateShop(orders, managerService, confectionerService, courierService);
+    }
+
+    public static void initializeMonitors(){
+        for(int i=0;i<monitors.length; i++){
+            monitors[i] = new Object();
+        }
     }
 
     private static void simulateShop(Queue<Order> orders, ExecutorService managerService, ExecutorService confectionerService, ExecutorService courierService) throws InterruptedException {
@@ -107,21 +119,55 @@ public class Runner {
         return order;
     }
 
-    private static void processOrder(Queue<Order> orders, ExecutorService confectionerService, ExecutorService courierService, Cake cake, Order order) {
+    public static void processOrder(Queue<Order> orders, ExecutorService confectionerService, ExecutorService courierService, Cake cake, Order order) {
         System.out.println("A manager got the following cake: " + cake.toString());
+        int counter = updateMonitorCounter();
 
-        Manager manager = new Manager();
-        Courier courier = new Courier();
         try {
-            Future<Order> futureOrder = manager.sendOrderToConfectioners(confectionerService, order, cake);
-            while(!futureOrder.isDone()){
-                Thread.currentThread().sleep(Constants.STAND_BY_TIME);
+            Manager manager = new Manager();
+
+            List<Future<Order>> futures = manager.sendOrderToConfectioners(confectionerService, order, cake);
+            order = retrieveOrder(futures);
+
+            if(Courier.getBusyCouriers() == Constants.COURIER_THREAD_NUMBER){
+                System.out.println(Messages.WAITING_MANAGER + order.getId());
+                synchronized (monitors[counter]){
+                    monitors[counter].wait();
+                }
+                System.out.println(Messages.RESUMING_MANAGER + order.getId());
             }
-            courier.deliverCake(futureOrder.get(), cake, courierService);
+
+            Courier courier = new Courier();
+            courier.deliverCake(order, cake, courierService, counter);
+            System.out.println(Messages.FREE_MANAGER);
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
 
         orders.remove(order);
+    }
+
+    public static int updateMonitorCounter() {
+        if(monitorCounter >= Constants.COURIER_THREAD_NUMBER ){
+            monitorCounter=0;
+        }
+        return monitorCounter++;
+    }
+
+    private static Order retrieveOrder(List<Future<Order>> futures){
+        Order order = null;
+        for(Future<Order> futureOrder: futures){
+            try {
+                order = futureOrder.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return order;
+    }
+
+    public static int getMonitorCounter() {
+        return monitorCounter;
     }
 }

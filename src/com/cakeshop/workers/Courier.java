@@ -1,24 +1,25 @@
 package com.cakeshop.workers;
 
+import com.cakeshop.Runner;
 import com.cakeshop.product.Cake;
 import com.cakeshop.product.Order;
 import com.cakeshop.product.OrderStatus;
+import com.cakeshop.utils.Messages;
 
 import java.util.concurrent.ExecutorService;
 
 public class Courier {
-    private int id;
 
-    public int getId() {
-        return id;
+    private static volatile int busyCouriers = 0;
+
+    public static int getBusyCouriers() {
+        return busyCouriers;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public void deliverCake(Order order, Cake cake, ExecutorService courierService) throws InterruptedException {
+    public void deliverCake(Order order, Cake cake, ExecutorService courierService, int counter) {
         courierService.submit(() -> {
+            busyCouriers++;
+
             try{
                 order.setStatus(OrderStatus.WAITING_DELIVERY);
                 System.out.println("Delivering order " + order.getId() + "; cake: " + cake.getName());
@@ -27,14 +28,13 @@ public class Courier {
             }catch(InterruptedException e){
                 order.setStatus(OrderStatus.FAILED);
                 e.printStackTrace();
+            }finally{
+                System.out.println(Messages.FREE_COURIER);
+                busyCouriers--;
+                synchronized (Runner.monitors[counter]){
+                    Runner.monitors[counter].notify();
+                }
             }
         });
-    }
-
-    @Override
-    public String toString() {
-        return "Order{" +
-                "id=" + id +
-                '}';
     }
 }
