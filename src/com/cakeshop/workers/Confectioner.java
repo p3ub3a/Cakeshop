@@ -1,22 +1,15 @@
 package com.cakeshop.workers;
 
 public abstract class Confectioner {
-    private int id;
+    private int duration;
 
-    public int getId() {
-        return id;
+    public Confectioner(int duration){
+        this.duration = duration;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public int getDuration() {
+        return duration;
     }
 
-    public abstract void prepareCake(int duration, int orderId, String cakeName) throws InterruptedException;
-
-    @Override
-    public String toString() {
-        return "Confectioner{" +
-                "id=" + id +
-                '}';
-    }
+    public abstract void prepareCake(int orderId, String cakeName) throws InterruptedException;
 }

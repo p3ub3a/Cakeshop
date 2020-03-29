@@ -14,15 +14,15 @@ public class Manager {
         List<Future<Order>> futures = new ArrayList<>();
         order.setStatus(OrderStatus.WAITING_BAKING);
 
-        Confectioner doughConfectioner = new DoughConfectioner();
+        Confectioner doughConfectioner = new DoughConfectioner(cake.getDoughDuration());
         Future<Order> futureDough = sendOrderToConfectioner(doughCService, doughConfectioner, order, cake);
         futures.add(futureDough);
 
-        Confectioner creamConfectioner = new CreamConfectioner();
+        Confectioner creamConfectioner = new CreamConfectioner(cake.getCreamDuration());
         Future<Order> futureCream = sendOrderToConfectioner(creamCService, creamConfectioner, order, cake);
         futures.add(futureCream);
 
-        Confectioner decosConfectioner = new DecorationsConfectioner();
+        Confectioner decosConfectioner = new DecorationsConfectioner(cake.getDecorationsDuration());
         Future<Order> futureDecos = sendOrderToConfectioner(decosCService, decosConfectioner, order, cake);
         futures.add(futureDecos);
         
@@ -33,7 +33,7 @@ public class Manager {
         return confectionerService.submit(() -> {
 
             try {
-                confectioner.prepareCake(cake.getDoughDuration(), order.getId(), cake.getName());
+                confectioner.prepareCake(order.getId(), cake.getName());
             } catch (InterruptedException e) {
                 order.setStatus(OrderStatus.FAILED);
                 e.printStackTrace();
