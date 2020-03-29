@@ -12,7 +12,7 @@ public class Courier {
 
     private static volatile int busyCouriers = 0;
 
-    public static int getBusyCouriers() {
+    public static synchronized int getBusyCouriers() {
         return busyCouriers;
     }
 

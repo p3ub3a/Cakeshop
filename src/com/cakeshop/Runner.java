@@ -124,7 +124,6 @@ public class Runner {
     public static void processOrder(Queue<Order> orders, ExecutorService confectionerService, ExecutorService courierService, Cake cake, Order order) {
         System.out.println("A manager got the following cake: " + cake.toString());
         int counter = updateMonitorCounter();
-        boolean shouldWait = true;
 
         try {
             Manager manager = new Manager();
@@ -137,6 +136,7 @@ public class Runner {
                 synchronized (monitors[counter]){
                     // keep on waiting in case of spurious wakeups
                     while(monitors[counter].isWaiting()){
+                        monitors[counter].setWaiting(true);
                         monitors[counter].wait();
                     }
                 }
