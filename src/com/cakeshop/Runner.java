@@ -5,6 +5,7 @@ import com.cakeshop.product.Order;
 import com.cakeshop.product.OrderStatus;
 import com.cakeshop.utils.Constants;
 import com.cakeshop.utils.Messages;
+import com.cakeshop.utils.Monitor;
 import com.cakeshop.workers.*;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public class Runner {
 
     private static volatile int orderCount = 0;
 
-    public static Object[] monitors = new Object[Constants.COURIER_THREAD_NUMBER];
+    public static Monitor[] monitors = new Monitor[Constants.COURIER_THREAD_NUMBER];
 
     private static volatile int monitorCounter = 0;
 
@@ -38,7 +39,8 @@ public class Runner {
 
     public static void initializeMonitors(){
         for(int i=0;i<monitors.length; i++){
-            monitors[i] = new Object();
+            monitors[i] = new Monitor();
+            monitors[i].setWaiting(true);
         }
     }
 
@@ -122,6 +124,7 @@ public class Runner {
     public static void processOrder(Queue<Order> orders, ExecutorService confectionerService, ExecutorService courierService, Cake cake, Order order) {
         System.out.println("A manager got the following cake: " + cake.toString());
         int counter = updateMonitorCounter();
+        boolean shouldWait = true;
 
         try {
             Manager manager = new Manager();
@@ -132,7 +135,10 @@ public class Runner {
             if(Courier.getBusyCouriers() == Constants.COURIER_THREAD_NUMBER){
                 System.out.println(Messages.WAITING_MANAGER + order.getId());
                 synchronized (monitors[counter]){
-                    monitors[counter].wait();
+                    // keep on waiting in case of spurious wakeups
+                    while(monitors[counter].isWaiting()){
+                        monitors[counter].wait();
+                    }
                 }
                 System.out.println(Messages.RESUMING_MANAGER + order.getId());
             }

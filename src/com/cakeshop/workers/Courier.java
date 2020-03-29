@@ -18,7 +18,9 @@ public class Courier {
 
     public void deliverCake(Order order, Cake cake, ExecutorService courierService, int counter) {
         courierService.submit(() -> {
-            busyCouriers++;
+            synchronized (Runner.monitors[counter]) {
+                busyCouriers++;
+            }
 
             try{
                 order.setStatus(OrderStatus.WAITING_DELIVERY);
@@ -32,6 +34,7 @@ public class Courier {
                 System.out.println(Messages.FREE_COURIER);
                 busyCouriers--;
                 synchronized (Runner.monitors[counter]){
+                    Runner.monitors[counter].setWaiting(false);
                     Runner.monitors[counter].notify();
                 }
             }
