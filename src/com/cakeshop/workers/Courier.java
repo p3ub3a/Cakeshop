@@ -5,6 +5,7 @@ import com.cakeshop.product.Cake;
 import com.cakeshop.product.Order;
 import com.cakeshop.product.OrderStatus;
 import com.cakeshop.utils.Messages;
+import com.cakeshop.utils.Monitor;
 
 import java.util.concurrent.ExecutorService;
 
@@ -24,20 +25,19 @@ public class Courier {
 
             try{
                 order.setStatus(OrderStatus.WAITING_DELIVERY);
-                System.out.println("Delivering order " + order.getId() + "; cake: " + cake.getName());
+                System.out.println(Messages.COURIER_THREAD + Messages.DELIVERING + order.getId() + "; cake: " + cake.getName());
                 Thread.currentThread().sleep(cake.getDeliveryDuration());
-                System.out.println("Delivered order " + order.getId() + "; cake: " + cake.getName());
+                System.out.println(Messages.COURIER_THREAD + Messages.DELIVERING + order.getId() + "; cake: " + cake.getName());
             }catch(InterruptedException e){
                 order.setStatus(OrderStatus.FAILED);
                 e.printStackTrace();
             }finally{
-                System.out.println(Messages.FREE_COURIER);
+                System.out.println(Messages.COURIER_THREAD + Messages.FREE_COURIER);
                 busyCouriers--;
-                synchronized (Runner.monitors[counter]){
-                    Runner.monitors[counter].setWaiting(false);
-                    Runner.monitors[counter].notify();
-                }
+                Monitor.wakeupThread(Runner.monitors[counter]);
             }
         });
     }
+
+
 }
