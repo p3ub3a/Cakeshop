@@ -43,7 +43,7 @@ public class Runner {
     private static void simulateShop(Queue<Order> orders, ExecutorService managerService, ExecutorService doughCService, ExecutorService creamCService, ExecutorService decosCService, ExecutorService courierService) throws InterruptedException {
         System.out.println(Messages.MAIN_THREAD + Messages.INTRO);
         while (shouldRun) {
-            if(orders.size() <= Constants.QUEUE_SIZE){
+            if(orders.size() < Constants.QUEUE_SIZE){
                 String input = getInput();
 
                 if (input == null) break;
@@ -123,7 +123,7 @@ public class Runner {
 
         orders.remove(order);
         // in case service line is waiting, notify it that an order is ready to be taken
-        if(orders.size() <= Constants.QUEUE_SIZE){
+        if(orders.size() < Constants.QUEUE_SIZE){
             Monitor.wakeupThread(queueMonitor);
         }
 

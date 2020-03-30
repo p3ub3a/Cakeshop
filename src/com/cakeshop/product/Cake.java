@@ -12,7 +12,7 @@ public enum Cake {
     UPSIDE_DOWN_CAKE("upside down cake",9,5000, 3000, 4000, 3000),
     HUMMING_BIRD_CAKE("hummingbird cake",10,3000, 5000, 4500, 3000),
     FRUIT_CAKE("fruit cake",11, 1000,3000, 6000, 4000),
-    SIMPLE_CAKE("simple cake",12, 5000,5000, 5000, 20000);
+    SIMPLE_CAKE("simple cake",12, 25000,25000, 25000, 20000);
 
     private String name;
     private int id;
