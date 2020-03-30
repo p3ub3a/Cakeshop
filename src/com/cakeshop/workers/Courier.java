@@ -27,7 +27,7 @@ public class Courier {
                 order.setStatus(OrderStatus.WAITING_DELIVERY);
                 System.out.println(Messages.COURIER_THREAD + Messages.DELIVERING + order.getId() + "; cake: " + cake.getName());
                 Thread.currentThread().sleep(cake.getDeliveryDuration());
-                System.out.println(Messages.COURIER_THREAD + Messages.DELIVERING + order.getId() + "; cake: " + cake.getName());
+                System.out.println(Messages.COURIER_THREAD + Messages.DELIVERED + order.getId() + "; cake: " + cake.getName());
             }catch(InterruptedException e){
                 order.setStatus(OrderStatus.FAILED);
                 e.printStackTrace();

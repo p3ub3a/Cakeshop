@@ -33,5 +33,6 @@ public class Messages {
     // couriers
     public static final String COURIER_THREAD = "<<<<< COURIER : ";
     public static final String DELIVERING = "Delivering order ";
+    public static final String DELIVERED = "Delivered order ";
     public static final String FREE_COURIER = "One courier is free!";
 }
