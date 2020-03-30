@@ -33,7 +33,9 @@ public class Courier {
                 e.printStackTrace();
             }finally{
                 System.out.println(Messages.COURIER_THREAD + Messages.FREE_COURIER);
-                busyCouriers--;
+                synchronized ( Runner.monitors[counter]){
+                    busyCouriers--;
+                }
                 Monitor.wakeupThread(Runner.monitors[counter]);
             }
         });

@@ -23,35 +23,33 @@
  * daca toti curierii sunt ocupati, managerul/thread-ul curent va astepta o notificare din partea curierului ce poseda monitorCounter-ul respectiv ( **monitors[counter].wait()** );
  * dupa ce a fost livrata comanda, aceasta este scoasa din coada de comenzi.
  
- ## product/Cake.java
- * un enum ce continte tipurile de torturi disponibile in magazin;
- * constructorul primeste, pe langa nume si id, timpii de preparare si de rulare in milisecunde.
- 
- ## product/Order.java
- * POJO pentru comanda.
- 
- ## product/OrderStatus.java
- * enum ce contine posibile statusuri ale unei comenzi.
- 
- ## utils/Constants.java, utils/Messages.java
- * fisiere ce contin constante.
- 
- ## workers/Confectioner.java
- * clasa abstracta ce este extinsa de catre cofetarii cu functii specifice (de preparare a cremei, blatului si decoratiunilor)
+## product/Cake.java
+* un enum ce continte tipurile de torturi disponibile in magazin;
+* constructorul primeste, pe langa nume si id, timpii de preparare si de rulare in milisecunde.
+
+## product/Order.java
+* POJO pentru comanda.
+
+## product/OrderStatus.java
+* enum ce contine posibile statusuri ale unei comenzi.
+
+## utils/Constants.java, utils/Messages.java
+* fisiere ce contin constante.
+
+## utils/Monitor.java
+* clasa folosita pentru sincronizarea thread-urilor;
+* **waiting** - indica daca thread-ul ar trebui sa ramana in asteptare;
+* **pauseThread(Monitor monitor)** - suspenda un thread;
+* **wakeupThread(Monitor monitor)** - trezeste un thread.
+
+## workers/Confectioner.java
+* **duration** - durata de preparare;
+ * clasa abstracta ce este extinsa de catre cofetarii cu functii specifice (de preparare a cremei, blatului si decoratiunilor).
  
 ##### prepareCake(int duration, int orderId, String cakeName)
 * fiecare cofetar suprascrie metoda;
 * **orderId** si **cakeName** sunt folosite pentru a afisa mesaje in consola;
 * **duration**: cat timp thread-ul curent va fi in **sleep** 
-
-## workers/Courier.java
-* **busyCouriers** - incrementata atunci cand un curier incepe livrarea, decrementata cand termina livrarea;
-* instanta acestei clase poate livra torturi cu ajutorul functiei *deliverCake*
-
-##### deliverCake(Order order, Cake cake, ExecutorService courierService)
-* **courierService** poate genera 5 thread-uri ce pot livra simultan comenzi;
-* durata livrarii este data de **cake.getDeliveryDuration()**;
-* la sfarsitul livrarii este notificat un manager ce se poate afla in asteptare: **Runner.monitors[counter].notify()**.
 
 ## workers/CreamConfectioner.java;
 * suprascrie metoda *prepareCake*;
@@ -68,15 +66,18 @@
 ## workers/Manager.java
 * instanta acestei clase poate trimite torturi catre cofetari cu ajutorul functiei *sendOrderToConfectioners*.
 
-##### Future<Order> sendOrderToConfectioners(ExecutorService confectionerService, Order order, Cake cake)
+##### List<Future<-Order>> sendOrderToConfectioners(ExecutorService doughCService, ExecutorService creamCService, ExecutorService decosCService, Order order, Cake cake)
 * trimite comanda si tipul de tort catre 3 cofetari, fiecare avand un rol specific;
 * returneaza o comanda de tip Future ce va fi folosite in **Runner.java**.
 
-##### sendOrderToDoughConfectioner(ExecutorService confectionerService, Order order, Cake cake)
-* confectionerService genereaza 5 thread-uri ce pot prepara blatul simultan.
+##### sendOrderToConfectioner(ExecutorService confectionerService, Confectioner confectioner, Order order, Cake cake)
+* confectionerService genereaza 5 thread-uri ce pot prepara torturi simultan.
 
-##### sendOrderToCreamConfectioner(ExecutorService confectionerService, Order order, Cake cake)
-* confectionerService genereaza 5 thread-uri ce pot prepara crema simultan.
+## workers/Courier.java
+* **busyCouriers** - incrementata atunci cand un curier incepe livrarea, decrementata cand termina livrarea;
+* instanta acestei clase poate livra torturi cu ajutorul functiei *deliverCake*
 
-##### sendOrderToDecorationsConfectioner(ExecutorService confectionerService, Order order, Cake cake)
-* confectionerService genereaza 5 thread-uri ce pot prepara decoratiunile simultan.
+##### deliverCake(Order order, Cake cake, ExecutorService courierService)
+* **courierService** poate genera 5 thread-uri ce pot livra simultan comenzi;
+* durata livrarii este data de **cake.getDeliveryDuration()**;
+* la sfarsitul livrarii este notificat un manager ce se poate afla in asteptare: **Runner.monitors[counter].notify()**.
