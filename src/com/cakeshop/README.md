@@ -2,6 +2,7 @@
 * **shouldRun** - variabila de tip boolean ce tine programul in viata (valoare default **true**), tasteaza 'X' in consola pentru a o seta cu **false**;
 * **orderCount** - variabila ce este incrementata atunci cand o comanda este preluata;
 * **monitors** - array de obiecte folosit la comunicarea dintre manageri si curieri;
+* **queueMonitor** - obiect folosit la comunicarea dintre manageri si responsabilul telefonic atunci cand coada de comenzi este plina;
 * **monitorCounter** - variabila folosita pentru a selecta indexul unui element din **monitors**.
 
 ##### Metoda main contine:
