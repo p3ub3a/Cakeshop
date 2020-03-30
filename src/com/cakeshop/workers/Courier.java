@@ -11,7 +11,7 @@ import java.util.concurrent.ExecutorService;
 
 public class Courier {
 
-    private static volatile int busyCouriers = 0;
+    private static int busyCouriers = 0;
 
     public static synchronized int getBusyCouriers() {
         return busyCouriers;
@@ -19,7 +19,7 @@ public class Courier {
 
     public void deliverCake(Order order, Cake cake, ExecutorService courierService, int counter) {
         courierService.submit(() -> {
-            synchronized (Runner.monitors[counter]) {
+            synchronized (Runner.managerMonitor) {
                 busyCouriers++;
             }
 
@@ -33,10 +33,10 @@ public class Courier {
                 e.printStackTrace();
             }finally{
                 System.out.println(Messages.COURIER_THREAD + Messages.FREE_COURIER);
-                synchronized ( Runner.monitors[counter]){
+                synchronized ( Runner.managerMonitor){
                     busyCouriers--;
                 }
-                Monitor.wakeupThread(Runner.monitors[counter]);
+                Monitor.wakeupThread(Runner.managerMonitor);
             }
         });
     }

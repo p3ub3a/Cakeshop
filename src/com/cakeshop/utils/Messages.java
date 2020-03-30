@@ -7,8 +7,8 @@ public class Messages {
     public static final String INTRO = "Please enter a number associated to the desired cake \n" +
             "You may type 'X' to quit.\n";
     public static final String IN_THE_RANGE_1_12 = "Please enter a numeric value in the range 1-12\n";
-    public static final String ORDER_TO_A_MANAGER = " Please stand by as all managers are currently busy ... \n";
-    public static final String MANAGER_READY = " A manager is ready to take your order \n";
+    public static final String ORDER_TO_A_MANAGER = " Please stand by as our order queue is full ... \n";
+    public static final String MANAGER_READY = " We are ready to take your order \n";
     public static final String SHUTTING_DOWN_EXECUTORS = "Closing shop...";
     public static final String CAKE_ORDER = "What cake would you like to order ?";
 

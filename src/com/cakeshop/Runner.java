@@ -16,19 +16,18 @@ import java.util.concurrent.*;
 public class Runner {
     private static boolean shouldRun = true;
 
-    private static volatile int orderCount = 0;
-
-    public static Monitor[] monitors = new Monitor[Constants.COURIER_THREAD_NUMBER];
+    private static int orderCount = 0;
 
     private static Monitor queueMonitor = new Monitor();
 
-    private static volatile int monitorCounter = 0;
+    public static Monitor managerMonitor = new Monitor();
+
+    private static int monitorCounter = 0;
 
     public static void main(String[] args) throws InterruptedException{
 
         Queue<Order> orders = new ConcurrentLinkedQueue<>();
 
-        initializeMonitors();
         // Managers
         ExecutorService managerService = Executors.newFixedThreadPool(Constants.MANAGER_THREAD_NUMBER);
         // Confectioners
@@ -41,16 +40,10 @@ public class Runner {
         simulateShop(orders, managerService, doughConfectionerService, creamConfectionerService, decosConfectionerService, courierService);
     }
 
-    public static void initializeMonitors(){
-        for(int i=0;i<monitors.length; i++){
-            monitors[i] = new Monitor();
-        }
-    }
-
     private static void simulateShop(Queue<Order> orders, ExecutorService managerService, ExecutorService doughCService, ExecutorService creamCService, ExecutorService decosCService, ExecutorService courierService) throws InterruptedException {
         System.out.println(Messages.MAIN_THREAD + Messages.INTRO);
         while (shouldRun) {
-            if(orders.size() <= Constants.MANAGER_THREAD_NUMBER){
+            if(orders.size() <= Constants.QUEUE_SIZE){
                 String input = getInput();
 
                 if (input == null) break;
@@ -127,6 +120,13 @@ public class Runner {
 
     public static void processOrder(Queue<Order> orders, ExecutorService doughCService, ExecutorService creamCService, ExecutorService decosCService, ExecutorService courierService, Cake cake, Order order) {
         System.out.println(Messages.MANAGER_THREAD + Messages.ASSIGN_ORDER + cake.toString());
+
+        orders.remove(order);
+        // in case service line is waiting, notify it that an order is ready to be taken
+        if(orders.size() <= Constants.QUEUE_SIZE){
+            Monitor.wakeupThread(queueMonitor);
+        }
+
         int counter = updateMonitorCounter();
 
         try {
@@ -137,7 +137,7 @@ public class Runner {
 
             if(Courier.getBusyCouriers() == Constants.COURIER_THREAD_NUMBER){
                 System.out.println(Messages.MANAGER_THREAD + Messages.WAITING_MANAGER + order.getId());
-                Monitor.pauseThread(monitors[counter]);
+                Monitor.pauseThread(managerMonitor);
                 System.out.println(Messages.MANAGER_THREAD + Messages.RESUMING_MANAGER + order.getId());
             }
 
@@ -146,13 +146,6 @@ public class Runner {
             System.out.println(Messages.MANAGER_THREAD + Messages.FREE_MANAGER);
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
-
-        orders.remove(order);
-
-        // in case service line is waiting, notify him that a manager is free
-        if(orders.size() <= Constants.MANAGER_THREAD_NUMBER){
-            Monitor.wakeupThread(queueMonitor);
         }
     }
 

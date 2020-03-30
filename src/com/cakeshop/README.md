@@ -1,13 +1,12 @@
 ## Runner.java
 * **shouldRun** - variabila de tip boolean ce tine programul in viata (valoare default **true**), tasteaza 'X' in consola pentru a o seta cu **false**;
 * **orderCount** - variabila ce este incrementata atunci cand o comanda este preluata;
-* **monitors** - array de obiecte folosit la comunicarea dintre manageri si curieri;
 * **queueMonitor** - obiect folosit la comunicarea dintre manageri si responsabilul telefonic atunci cand coada de comenzi este plina;
+* **managerMonitor** - obiect folosit la comunicarea dintre manageri si curieri;
 * **monitorCounter** - variabila folosita pentru a selecta indexul unui element din **monitors**.
 
 ##### Metoda main contine:
  * o coada de comenzi ce poate fi folosita de mai multe fire de executie, din moment ce este de tip ConcurrentLinkedQueue;
- * o metoda *initializeMonitors* ce initializeaza array-ul **monitors**;
  * 5 ExecturService care genereaza 6 threaduri pentru manageri, 15 threaduri pentru cofetari si 5 threaduri pentru curieri;
  * o metoda *simulateShop* careia i se dau ca si argumente coada de comenzi si ExecutorService-urile.
 
@@ -21,7 +20,7 @@
  ##### processOrder(Queue<Order> orders, ExecutorService confectionerService, ExecutorService courierService, Cake cake, Order order)
  * metoda responsabila cu trimiterea comenzii catre cofetari si, ulterior, livrarea acesteia;
  * **sendOrderToConfectioners** returneaza o lista **List<Future<-Order>>**. Inainte de a livra comanda, thread-ul asociat unui manager va astepta cofetarii sa termine treaba;
- * daca toti curierii sunt ocupati, managerul/thread-ul curent va astepta o notificare din partea curierului ce poseda monitorCounter-ul respectiv ( **monitors[counter].wait()** );
+ * daca toti curierii sunt ocupati, managerul/thread-ul curent va astepta o notificare din partea curierului;
  * dupa ce a fost livrata comanda, aceasta este scoasa din coada de comenzi.
  
 ## product/Cake.java
@@ -81,4 +80,4 @@
 ##### deliverCake(Order order, Cake cake, ExecutorService courierService)
 * **courierService** poate genera 5 thread-uri ce pot livra simultan comenzi;
 * durata livrarii este data de **cake.getDeliveryDuration()**;
-* la sfarsitul livrarii este notificat un manager ce se poate afla in asteptare: **Runner.monitors[counter].notify()**.
+* la sfarsitul livrarii este notificat un manager ce se poate afla in asteptare.
